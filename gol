@@ -1,0 +1,45 @@
+los neightbors se van a calcular asi morro:
+	para una random que este en el medio
+	digamos que la posicion esta esta en r14
+	primero tendriamos que ir a la casilla que esta arriba a la izquierda de ella
+	ya que seria la que tendria menor indice, esto se haria
+	restandole al valor de indice actual el tamaño del tablero mas 1
+	r14 - (tamaño tablero + 1)
+	al estar en esa posicion, pues ya simplemente se verifica si esta vivo o muerto
+	y se pasa a la siguiente casilla, que este caso seria literal la siguiente, luego la que sigue
+	asi ya tendriamos las casillas de arriba
+	---
+	.#.
+	...
+
+	nos faltarian las de los lados y las de abajo
+	para la delos lados simplemento volvemos a agarrar el valor de el indice actual y le restamos, luego le sumamos 2
+	---
+	-#-
+	...
+	solo quedarian los de abajo, y ya por ultima se le suma a la ultima casilla en la que estuvo que en este caso seria la actual + 1, se le suma el tamaño del tablero - 2, asi estando en la casilla inferior izquierda, y se repite el proceso de la primera parte
+	---
+	-#-
+	---
+
+	ahora para una celula que esta en algun limite ya sea horizontal o vertical, simplemente tendriamos que ver el indice y aplicarle el modulo del tamaño del tablero, eso funcionaria con el limite superior e izquierdo ya que inician en 0, sin embargo si queremos hacer lo mismo con el limite derecho e inferior, el modulo nos daria 1, ya que el indice de esos limites es el tamaño del tablero menos 1, otra cosa que podemos hacer seria simplemente ver si el indice es igual a 0 o a el tamaño del tablero
+
+	0 1 2 3 
+	4 5 6 7
+	8 9 10 11
+	12 13 14 15
+
+	limite izquierdo -> indice % tamaño del tablero  == 0
+	limite derecho -> indice % tamaño del tablero == tamaño del tablero - 1
+	limite superior -> indice >= 0 && indice < tamaño del tablero
+	limite inferior -> indice >= tamaño del tablero * (tamaño del tablero - 1)
+
+	ahora la cosa, el programa tiene que calcular los vecinos con el mismo tablero para todas las celulas, por tanto ocuparia dos tablero, una con las celulas que cambian, y otra con la copia de la anterior gen
+	cuando una gen acaba de evolucionar, se copiaria toda la informacion dela gen que cambia a la copia, y asi la gen que cambia podria tener a todas las celulas viendo la misma copia que se acaba de copiar
+
+r9 -> indice de la celula actual
+r10 -> numero de vecinos de la celula actual
+r11 -> puntero absoluto en el tablero real
+r12 -> puntero relativo al tablero real en el tablero copia
+r13 -> puntero con el que se verificara el estado de los vecinos
+r15 -> puntero al character
