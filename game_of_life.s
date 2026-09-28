@@ -4,19 +4,46 @@
 .data
 grid: .skip 256, 0x00
 grid_ss: .skip 256, 0x00
+delay:
+	.quad 1
+	.quad 0
+limpiar: .ascii "\x1b[H"
+.equ limpiar_len, 3
+		
+		
 character: .byte 0x00
+
 
 .text
 _start: 
-	lea r11, [grid]
+	lea r8, [grid]
+	add r8, 18 
+	inc byte ptr [r8]
+	add r8, 17 
+	inc byte ptr [r8]
+	add r8, 16
+	inc byte ptr[r8]
+	dec r8
+	inc byte ptr[r8]
+	dec r8
+	inc byte ptr[r8]
+	lea r15, [character]
+	jmp imprimir_copiar
+	
+	main_loop:
+	call limpiar_pantalla
+	lea r8, [grid]
 	lea r12, [grid_ss]
 	mov r13, r12
-	lea r15, [character]
 	xor r9, r9
+	mov rax, 35
+	lea rdi, [delay]
+	mov rsi, 0
+	syscall
 
 	verify_neighbors:
 	cmp r9, 256
-	je exit	
+	je imprimir_copiar
 	xor r10, r10	
 	
 	cmp r9, 16
@@ -42,7 +69,7 @@ _start:
 	call verify_sides
 
 	decide:
-	cmp byte ptr [r11], 0
+	cmp byte ptr [r8], 0
 	je decide_dead
 	decide_live:
 	cmp r10, 1
@@ -66,7 +93,7 @@ _start:
 	call born
 
 	next_cell:
-	inc r11
+	inc r8
 	inc r12
 	inc r9
 	mov r13, r12
@@ -95,11 +122,66 @@ _start:
 	ret
 
 	kill:
-	mov byte ptr [r11], 0
+	mov byte ptr [r8], 0
 	ret
 
 	born:
-	mov byte ptr [r11], 1
+	mov byte ptr [r8], 1
+	ret
+
+	imprimir_copiar:
+	xor r9, r9
+	lea r8, [grid]
+	lea r12, [grid_ss]
+	loop_filas:
+		cmp r9, 256
+		je main_loop
+
+	loop_columnas:
+		cmp byte ptr [r8], 1
+		je asignar_vivo
+		
+	asignar_muerto:
+		mov byte ptr [r15], 46
+		jmp continuar_columnas
+	asignar_vivo:
+		mov byte ptr [r15], 35
+	
+	continuar_columnas:
+		call imprimir_char
+		mov r14b, byte ptr [r8]
+		mov byte ptr [r12], r14b
+		inc r8
+		inc r12
+		inc r9
+		xor edx, edx
+		mov eax, r9d
+		mov ecx, 16
+		div ecx
+		cmp edx, 0
+		je final_fila
+		jmp loop_columnas
+	
+
+	final_fila:
+	       mov byte ptr [r15], 10
+	       call imprimir_char
+	       jmp loop_filas
+
+	imprimir_char:
+		mov rax, 1
+		mov rdi, 1
+		mov rsi, r15
+		mov rdx, 1
+		syscall
+		ret
+
+	limpiar_pantalla:
+	mov rax, 1
+	mov rdi, 1
+	lea rsi, [limpiar]
+	mov rdx, limpiar_len
+	syscall
 	ret
 
 	exit: 
