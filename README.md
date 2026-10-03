@@ -19,7 +19,9 @@ Just Assembly, memory, syscalls and larping.
 
 I started this project after working with WASM because I wanted to go even lower and get a better understanding of how the programs interact with memory, registers and the operating system.
 
-The goal is to implement Conway's Game of Life completely in Assembly and run it directly in the Linux terminal.
+This project implements Conway's Game of Life completely in Assembly and run it directly in the Linux terminal.
+
+The board can be edited interactuvely before starting the simulation, and everything from rendering and keyboard input to timing and terminal configuration is handled directly through Linux syscalls.
 
 <p align="center">
   ──────────────[ CURRENT STATE ]──────────────
@@ -38,8 +40,29 @@ The program currently:
 - renders directly to stdout using the `write` syscall
 - moves the terminal cursor back to the beginning between generations
 - waits between generations using the `nanosleep` syscall
+- starts with an empty grid
+- lets you edit cells before simulation
+- uses `h\j\k\l` for movement
+- `Space` toggles cells
+- `Enter` starts the simulation
+- `q` exits
+- reads keyboard input directly from the terminal
+- switches the terminal to non-canonical mode using `ioctl/termios`
+- uses ANSI escape sequences for cursor movement and visibility
 
-The simulation is already running with a single hardcoded glider, the project is not finished yet.
+<p align="center">
+  ──────────────[ CONTROLS ]──────────────
+</p>
+
+## Controls
+
+h       move left
+j       move down
+k       move up
+l       move right
+Space   toggle cell
+Enter   start simulation
+q       quit
 
 <p align="center">
   ──────────────[ SYSCALLS ]──────────────
@@ -50,38 +73,55 @@ The simulation is already running with a single hardcoded glider, the project is
 There is no:
 - `printf`
 - `sleep`
+- runtime handling terminal input for me
 - standard library
 
-Printing one character means doing this every time:
+Printing to the terminal means using the write syscall directly.
 
-```asm
-mov rax, 1
-mov rdi, 1
-mov rsi, r15
-mov rdx, 1
-syscall
-```
+Waiting between generations uses `nanosleep`.
 
-Waiting between each generation means:
+Keyboard input is read directly from `stdin`
 
-```asm
-mov rax, 35
-lea rdi, [delay]
-xor rsi, rsi
-syscall
-```
+The terminal itself is configured through `ioctl` and `termios`, while ANSI escape sequences are used to move and hide the cursor.
 
-And exiting the program means:
+This means the program has to manually deal with things that higher-level programs normally get for free:
 
-```asm
-xor rdi, rdi
-mov rax, 60
-syscall
-```
+- terminal configuration
+- non-canonical keyboard input
+- cursor movement
+- memory layout
+- double buffering
+- timing
+- exit and cleanup
 
 Could this be easier in C?
 
 Of course, but how can I larp with that.
+
+<p align="center">
+  ──────────────[ TERMINAL INPUT ]──────────────
+</p>
+
+## Terminal input
+
+The terminals normally operate in canonical mode, this means that the input is buffered until you press Enter.
+
+That does not work very well for something like this, where you need to make an action just by pressing one key.
+
+The program uses `ioctl` with `termios` to disable ICANON and ECHO, allowing individual key presses to be read directly without printing them to the terminal.
+
+During board editing, input blocks until a key is pressed.
+
+Once the simulation starts, VMIN is changed so keyboard reads become non-blocking. This allows the program to check for input such as  `q` without stopping the simulation loop.
+
+ANSI escape sequences are also used for terminal control:
+
+- moving the cursor with h, j, k, l
+- returning to the beginning of the board
+- hiding the cursor during simulation
+- restoring the cursor before existing
+
+Before the program exits, the original terminal configuration is restored.
 
 <p align="center">
   ──────────────[ MEMORY ]──────────────
@@ -163,5 +203,8 @@ ld game_of_life.o -o game_of_life
 
 ## Next steps
 
-As you can see the project is not finished yet. I would like to add a way to enter your own cells and then start the simulation, as well as make the grid size variable.
-Besides features, I would also like to make the code more efficient or more idiomatic for the language, because I am learning and figuring out how to do things while doing this project.
+This project is finished.
+
+The current version supports interactive cell editing, Vim-style movement and a continuosly running simulation.
+
+I would like to include a lot of more things, but aren't necessary for an MVP, like configurable grid size, configurable simulation speed, reducing unnecesary syscalls and in general making the code more efficient, clean and idiomatic.
