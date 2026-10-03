@@ -11,8 +11,6 @@
 
 Just Assembly, memory, syscalls and larping.
 
-> This project is still in progress.
-
 <p align="center">
   ──────────────[ x86-64 ]──────────────
 </p>
