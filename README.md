@@ -11,17 +11,15 @@
 
 Just Assembly, memory, syscalls and larping.
 
-> This project is still in progress.
-
 <p align="center">
   ──────────────[ x86-64 ]──────────────
 </p>
 
 I started this project after working with WASM because I wanted to go even lower and get a better understanding of how the programs interact with memory, registers and the operating system.
 
-This project implements Conway's Game of Life completely in Assembly and run it directly in the Linux terminal.
+This project implements Conway's Game of Life completely in Assembly and runs it directly in the Linux terminal.
 
-The board can be edited interactuvely before starting the simulation, and everything from rendering and keyboard input to timing and terminal configuration is handled directly through Linux syscalls.
+The board can be edited interactively before starting the simulation, and everything from rendering and keyboard input to timing and terminal configuration is handled directly through Linux syscalls.
 
 <p align="center">
   ──────────────[ CURRENT STATE ]──────────────
@@ -56,6 +54,7 @@ The program currently:
 
 ## Controls
 
+```
 h       move left
 j       move down
 k       move up
@@ -63,6 +62,7 @@ l       move right
 Space   toggle cell
 Enter   start simulation
 q       quit
+```
 
 <p align="center">
   ──────────────[ SYSCALLS ]──────────────
@@ -205,6 +205,6 @@ ld game_of_life.o -o game_of_life
 
 This project is finished.
 
-The current version supports interactive cell editing, Vim-style movement and a continuosly running simulation.
+The current version supports interactive cell editing, Vim-style movement and a continuously running simulation.
 
-I would like to include a lot of more things, but aren't necessary for an MVP, like configurable grid size, configurable simulation speed, reducing unnecesary syscalls and in general making the code more efficient, clean and idiomatic.
+I would like to include a lot of more things, but aren't necessary for an MVP, like configurable grid size, configurable simulation speed, reducing unnecessary syscalls and in general making the code more efficient, clean and idiomatic.
